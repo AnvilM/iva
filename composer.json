@@ -1,0 +1,26 @@
+{
+    "name": "anvilm/iva",
+    "description": "CLI framework for PHP 8.4+ with a real command tree, strongly typed input DTOs, GNU/POSIX-style option parsing, and a section/progress-bar/spinner output model.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "php-standard-library/foundation": "^6.0",
+        "php-standard-library/type": "^6.0",
+        "php-standard-library/str": "^6.0",
+        "php-standard-library/io": "^6.0",
+        "php-standard-library/ansi": "^6.0",
+        "php-standard-library/async": "^6.0",
+        "php-standard-library/os": "^6.0",
+        "php-standard-library/date-time": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Iva\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}

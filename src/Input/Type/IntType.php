@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iva\Input\Type;
+
+use Iva\Input\Exception\ValueCoercionException;
+use Psl\Type;
+use Psl\Type\Exception\AssertException;
+use Psl\Type\Exception\CoercionException;
+
+/**
+ * @implements InputType<int>
+ */
+final class IntType implements InputType
+{
+    public function coerce(string|array|bool|null $raw): int
+    {
+        $value = RawValue::scalar($raw, 'int');
+
+        if (is_string($value) && !preg_match('/^[+-]?\d+$/', $value)) {
+            throw new ValueCoercionException(sprintf('"%s" is not a valid integer', $value), 'int');
+        }
+
+        try {
+            return Type\int()->coerce($value);
+        } catch (CoercionException | AssertException $e) {
+            throw new ValueCoercionException($e->getMessage(), 'int');
+        }
+    }
+
+    public function describe(): string
+    {
+        return 'int';
+    }
+}
