@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Command;
+namespace src\Command;
 
 final class CommandBuilder
 {

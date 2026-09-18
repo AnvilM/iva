@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input\Exception;
+namespace src\Input\Exception;
 
-use Iva\Exception\CliException;
-use Iva\ExitCode;
+use src\Exception\CliException;
+use src\ExitCode;
 
 final class UnknownCommandException extends CliException
 {

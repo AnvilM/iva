@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input;
+namespace src\Input;
 
-use Iva\Input\Exception\FieldError;
+use src\Input\Exception\FieldError;
 
 final class ParseResult
 {

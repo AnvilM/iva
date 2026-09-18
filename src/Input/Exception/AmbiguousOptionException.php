@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input\Exception;
+namespace src\Input\Exception;
 
 final class AmbiguousOptionException extends InputValidationException
 {

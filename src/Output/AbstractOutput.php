@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
-use Iva\Output\Formatter\OutputFormatter;
-use Iva\Output\Formatter\Style;
-use Iva\Output\Terminal\ColorSupport;
+use src\Output\Formatter\OutputFormatter;
+use src\Output\Formatter\Style;
+use src\Output\Terminal\ColorSupport;
 
 /**
  * Shared plumbing for the three Output implementations: verbosity gating,
@@ -179,7 +179,7 @@ abstract class AbstractOutput implements Output
         return new DefaultSpinner(
             $this->section(),
             $message,
-            SpinnerStyle::default(Terminal\UnicodeSupport::detect()),
+            SpinnerStyle::default(\src\Output\Terminal\UnicodeSupport::detect()),
             $this->formatter,
             $this->colorSupportLevel,
         );
@@ -187,7 +187,7 @@ abstract class AbstractOutput implements Output
 
     public function table(): Table
     {
-        return new Table($this, $this->formatter, $this->colorSupportLevel, Terminal\UnicodeSupport::detect());
+        return new Table($this, $this->formatter, $this->colorSupportLevel, \src\Output\Terminal\UnicodeSupport::detect());
     }
 
     public function tree(): Tree

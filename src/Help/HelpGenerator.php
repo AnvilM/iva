@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Iva\Help;
+namespace src\Help;
 
-use Iva\Command\CommandNode;
-use Iva\Command\CommandTree;
-use Iva\Input\Argument;
-use Iva\Input\Definition;
-use Iva\Input\GlobalOptions;
-use Iva\Input\Option;
-use Iva\Input\OptionMode;
-use Iva\Input\OptionOrigin;
-use Iva\Output\Output;
+use src\Command\CommandNode;
+use src\Command\CommandTree;
+use src\Input\Argument;
+use src\Input\Definition;
+use src\Input\GlobalOptions;
+use src\Input\Option;
+use src\Input\OptionMode;
+use src\Input\OptionOrigin;
+use src\Output\Output;
 
 final readonly class HelpGenerator
 {
@@ -212,7 +212,7 @@ final readonly class HelpGenerator
             return;
         }
 
-        /** @var array<string, list<CommandNode>> $groups */
+        /** @var CommandNode $groups */
         $groups = [];
 
         foreach ($visible as $node) {

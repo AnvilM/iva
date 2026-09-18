@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
 interface ProgressBar
 {

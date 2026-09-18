@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Command;
+namespace src\Command;
 
 /**
  * "Unknown command X, did you mean Y?" — Levenshtein distance combined with a

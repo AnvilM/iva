@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
-use Iva\Output\Terminal\ColorSupport;
+use src\Output\Terminal\ColorSupport;
 
 /**
  * Parses `<info>...</info>` / `<fg=green;options=bold>...</>` markup.

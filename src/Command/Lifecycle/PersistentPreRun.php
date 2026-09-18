@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Command\Lifecycle;
+namespace src\Command\Lifecycle;
 
-use Iva\Output\Output;
+use src\Output\Output;
 
 interface PersistentPreRun
 {

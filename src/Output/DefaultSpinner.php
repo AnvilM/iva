@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
-use Iva\Output\Formatter\OutputFormatter;
-use Iva\Output\Terminal\ColorSupport;
 use Psl\Async;
 use Psl\DateTime;
+use src\Output\Formatter\OutputFormatter;
+use src\Output\Terminal\ColorSupport;
 
 final class DefaultSpinner implements Spinner
 {
@@ -15,6 +15,9 @@ final class DefaultSpinner implements Spinner
 
     private int $frameIndex = 0;
     private bool $running = false;
+
+    /** Event-loop watcher that advances the frames while the spinner is running. */
+    private ?string $ticker = null;
 
     public function __construct(
         private readonly Section $section,
@@ -27,8 +30,24 @@ final class DefaultSpinner implements Spinner
 
     public function start(): void
     {
+        if ($this->running) {
+            return;
+        }
+
         $this->running = true;
         $this->render();
+
+        $this->ticker = Async\Scheduler::repeat(
+            DateTime\Duration::milliseconds((int) (1000 / self::FRAMES_PER_SECOND)),
+            function (): void {
+                $this->frameIndex++;
+                $this->render();
+            },
+        );
+
+        // The ticker must never be the thing that keeps the process alive:
+        // a spinner nobody stopped shouldn't hang the event loop at exit.
+        Async\Scheduler::unreference($this->ticker);
     }
 
     public function setMessage(string $message): void
@@ -41,33 +60,12 @@ final class DefaultSpinner implements Spinner
     {
         $this->start();
 
-        $done = false;
-        $result = null;
-        $error = null;
-
-        Async\concurrently([
-            function () use (&$done): void {
-                while (!$done) {
-                    $this->frameIndex++;
-                    $this->render();
-                    Async\sleep(DateTime\Duration::milliseconds((int) (1000 / self::FRAMES_PER_SECOND)));
-                }
-            },
-            function () use ($work, &$done, &$result, &$error): void {
-                try {
-                    $result = $work();
-                } catch (\Throwable $e) {
-                    $error = $e;
-                } finally {
-                    $done = true;
-                }
-            },
-        ]);
-
-        if ($error !== null) {
+        try {
+            $result = $work();
+        } catch (\Throwable $e) {
             $this->fail();
 
-            throw $error;
+            throw $e;
         }
 
         $this->succeed();
@@ -97,16 +95,26 @@ final class DefaultSpinner implements Spinner
 
     public function stop(): void
     {
-        $this->running = false;
+        $this->halt();
         $this->release();
     }
 
     private function finish(string $icon, ?string $message): void
     {
-        $this->running = false;
+        $this->halt();
         $text = $message ?? $this->message;
         $this->paint($icon . ' ' . $text);
         $this->release();
+    }
+
+    private function halt(): void
+    {
+        $this->running = false;
+
+        if ($this->ticker !== null) {
+            Async\Scheduler::cancel($this->ticker);
+            $this->ticker = null;
+        }
     }
 
     private function release(): void
@@ -125,7 +133,9 @@ final class DefaultSpinner implements Spinner
         $frames = $this->style->frames();
         $frame = $frames[$this->frameIndex % count($frames)];
 
-        $this->paint('<info>' . $frame . '</info> ' . $this->message);
+        // The space goes *inside* the tag: the Line/Ascii frames contain a backslash,
+        // and a backslash directly before `</info>` would escape the tag.
+        $this->paint('<info>' . $frame . ' </info>' . $this->message);
     }
 
     private function paint(string $line): void

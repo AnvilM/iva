@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Command;
+namespace src\Command;
 
-use Iva\Input\Exception\UnknownCommandException;
+use src\Input\Exception\UnknownCommandException;
 
 final readonly class CommandResolver
 {

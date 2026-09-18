@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
 final readonly class Style
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input\Type;
+namespace src\Input\Type;
 
 /**
  * @template T

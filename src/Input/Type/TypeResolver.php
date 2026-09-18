@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input\Type;
+namespace src\Input\Type;
 
 /**
  * A couple of small helpers shared by Argument/Option's named constructors.

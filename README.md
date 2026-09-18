@@ -79,12 +79,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Iva\Application;
-use Iva\Command\Command;
-use Iva\Input\Argument;
-use Iva\Input\Input;
-use Iva\Input\Option;
-use Iva\Output\Output;
+use src\Application;use src\Command\Command;use src\Input\Argument;use src\Input\Input;use src\Input\Option;use src\Output\Output;
 
 final class GreetCommand extends Command
 {
@@ -240,7 +235,7 @@ final class DbGroup extends CommandGroup implements PersistentPreRun, Persistent
 ### Testing
 
 ```php
-use Iva\Testing\CommandTester;
+use src\Testing\CommandTester;
 
 $tester = new CommandTester(new GreetCommand());
 $tester->execute(['Ada', '--loud']);

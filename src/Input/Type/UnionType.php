@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input\Type;
+namespace src\Input\Type;
 
-use Iva\Input\Exception\ValueCoercionException;
+use src\Input\Exception\ValueCoercionException;
 
 /**
  * @implements InputType<mixed>
  */
 final class UnionType implements InputType
 {
-    /** @var non-empty-list<InputType<mixed>> */
+    /** @var InputType */
     private readonly array $members;
 
     /**
-     * @param non-empty-list<InputType<mixed>> $members
+     * @param InputType $members
      */
     public function __construct(array $members)
     {

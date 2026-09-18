@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
-use Iva\Output\Formatter\OutputFormatter;
-use Iva\Output\Terminal\ColorSupport;
-use Iva\Output\Terminal\VisualWidth;
 use Psl\Async;
 use Psl\DateTime;
+use src\Output\Formatter\OutputFormatter;
+use src\Output\Terminal\ColorSupport;
+use function Psl\Async;
 
 final class DefaultProgressBar implements ProgressBar
 {

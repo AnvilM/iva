@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Terminal;
+namespace src\Output\Terminal;
 
 /**
  * Raw ANSI CSI sequences for cursor movement and line/screen erasure.

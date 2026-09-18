@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Terminal;
+namespace src\Output\Terminal;
 
 use Psl\Str;
+use function Psl\Str;
 
 /**
  * "How many terminal columns does this string occupy" — used anywhere layout

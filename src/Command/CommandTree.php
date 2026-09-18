@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Command;
+namespace src\Command;
 
 /**
  * Holds the root-level command nodes. Trees are always built explicitly,

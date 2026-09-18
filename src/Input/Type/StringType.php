@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input\Type;
+namespace src\Input\Type;
 
-use Iva\Input\Exception\ValueCoercionException;
 use Psl\Type;
 use Psl\Type\Exception\AssertException;
 use Psl\Type\Exception\CoercionException;
+use src\Input\Exception\ValueCoercionException;
+use function Psl\Type;
 
 /**
  * @implements InputType<string>

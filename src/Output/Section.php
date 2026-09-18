@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
 /**
  * A region of the terminal that can be redrawn in place, without the

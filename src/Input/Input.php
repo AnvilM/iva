@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input;
+namespace src\Input;
 
 /**
  * Fully parsed, type-coerced input handed to Command::execute(), built by

@@ -2,36 +2,35 @@
 
 declare(strict_types=1);
 
-namespace Iva;
+namespace src;
 
-use Iva\Command\Command;
-use Iva\Command\CommandBuilder;
-use Iva\Command\CommandNode;
-use Iva\Command\CommandResolver;
-use Iva\Command\CommandTree;
-use Iva\Command\Exception\CommandExecutionException;
-use Iva\Command\Lifecycle\PersistentPostRun;
-use Iva\Command\Lifecycle\PersistentPreRun;
-use Iva\Command\Lifecycle\PostRun;
-use Iva\Command\Lifecycle\PreRun;
-use Iva\Exception\CliException;
-use Iva\Help\HelpGenerator;
-use Iva\Help\UsageLineBuilder;
-use Iva\Input\Definition;
-use Iva\Input\DefinitionFactory;
-use Iva\Input\Exception\InputValidationException;
-use Iva\Input\GlobalOptions;
-use Iva\Input\Input;
-use Iva\Input\InputBinder;
-use Iva\Input\Lexer;
-use Iva\Input\ParseResult;
-use Iva\Input\Parser;
-use Iva\Output\ConsoleOutput;
-use Iva\Output\ErrorConsoleOutput;
-use Iva\Output\GlobalOutput;
-use Iva\Output\Output;
-use Iva\Output\Terminal\ColorSupport;
-use Iva\Output\Verbosity;
+use src\Command\Command;
+use src\Command\CommandBuilder;
+use src\Command\CommandNode;
+use src\Command\CommandResolver;
+use src\Command\CommandTree;
+use src\Command\Lifecycle\PersistentPostRun;
+use src\Command\Lifecycle\PersistentPreRun;
+use src\Command\Lifecycle\PostRun;
+use src\Command\Lifecycle\PreRun;
+use src\Exception\CliException;
+use src\Help\HelpGenerator;
+use src\Help\UsageLineBuilder;
+use src\Input\Definition;
+use src\Input\DefinitionFactory;
+use src\Input\Exception\InputValidationException;
+use src\Input\GlobalOptions;
+use src\Input\Input;
+use src\Input\InputBinder;
+use src\Input\Lexer;
+use src\Input\Parser;
+use src\Input\ParseResult;
+use src\Output\ConsoleOutput;
+use src\Output\ErrorConsoleOutput;
+use src\Output\GlobalOutput;
+use src\Output\Output;
+use src\Output\Terminal\ColorSupport;
+use src\Output\Verbosity;
 
 /**
  * Zero-magic-global-state entry point: an ordinary object, several instances
@@ -133,17 +132,7 @@ final class Application
 
         $tokens = array_values(array_slice($argv, 1));
 
-        try {
-            return $this->dispatch($tokens, $output, $errorOutput);
-        } catch (CliException $e) {
-            $this->renderException($errorOutput, $e);
-
-            return $e->exitCode->value;
-        } catch (\Throwable $e) {
-            $this->renderUnexpected($errorOutput, $e, $errorOutput->verbosity()->atLeast(Verbosity::VeryVerbose));
-
-            return ExitCode::Software->value;
-        }
+        return $this->dispatch($tokens, $output, $errorOutput);
     }
 
     /**
@@ -181,11 +170,22 @@ final class Application
             return ExitCode::Ok->value;
         }
 
-        [$path, $remaining] = $this->resolver->resolve($tokens);
-        $node = $path[count($path) - 1];
+        // Errors the framework itself raises while turning argv into a
+        // command invocation (unknown command, unknown/ambiguous option, ...)
+        // are the caller's typos, not bugs: report them and return their exit
+        // code. Nothing past this point in dispatch() ever catches what a
+        // command throws from its own execute().
+        try {
+            [$path, $remaining] = $this->resolver->resolve($tokens);
+            $node = $path[count($path) - 1];
 
-        $definition = $this->definitionFactory->create($path, allowAbbreviation: $this->optionAbbreviation);
-        $parseResult = $this->parser->parse($this->lexer->tokenize($remaining), $definition);
+            $definition = $this->definitionFactory->create($path, allowAbbreviation: $this->optionAbbreviation);
+            $parseResult = $this->parser->parse($this->lexer->tokenize($remaining), $definition);
+        } catch (CliException $e) {
+            $this->renderException($errorOutput, $e);
+
+            return $e->exitCode->value;
+        }
 
         [$output, $errorOutput] = $this->applyGlobalOutputFlags($parseResult, $output, $errorOutput);
 
@@ -216,7 +216,7 @@ final class Application
             return $e->exitCode->value;
         }
 
-        return $this->executeLifecycle($path, $node, $input, $definition, $output, $errorOutput);
+        return $this->executeLifecycle($path, $node, $input, $output);
     }
 
     /**
@@ -271,12 +271,16 @@ final class Application
         array $path,
         CommandNode $leafNode,
         Input $input,
-        Definition $definition,
         Output $output,
-        Output $errorOutput,
     ): int {
         $ancestorNodes = array_slice($path, 0, -1);
         $leafCommand = $leafNode->command();
+
+        // persistentPostRun behaves like a `finally`: ancestors get a
+        // chance to release resources / close progress bars / print a
+        // summary even when the run failed. The exception itself is not
+        // handled here — it propagates to the caller untouched.
+        $exitCode = ExitCode::Software->value;
 
         try {
             foreach ($ancestorNodes as $ancestorNode) {
@@ -296,24 +300,9 @@ final class Application
             if ($leafCommand instanceof PostRun) {
                 $leafCommand->postRun($output, $exitCode);
             }
-        } catch (\Throwable $e) {
-            $cliException = $e instanceof CliException ? $e : new CommandExecutionException($leafNode->path(), $e);
-
-            // persistentPostRun behaves like a `finally`: ancestors get a
-            // chance to release resources / close progress bars / print a
-            // summary even when the run failed.
-            $this->runPersistentPostRunChain($ancestorNodes, $output, $cliException->exitCode->value);
-
-            if ($cliException instanceof InputValidationException) {
-                $this->renderInputValidation($errorOutput, $cliException, $leafNode, $definition);
-            } else {
-                $this->renderException($errorOutput, $cliException);
-            }
-
-            return $cliException->exitCode->value;
+        } finally {
+            $this->runPersistentPostRunChain($ancestorNodes, $output, $exitCode);
         }
-
-        $this->runPersistentPostRunChain($ancestorNodes, $output, $exitCode);
 
         return $exitCode;
     }
@@ -361,21 +350,7 @@ final class Application
 
     private function renderException(Output $errorOutput, CliException $exception): void
     {
-        $errorOutput->writeln(sprintf('<error>Error:</error> %s', $exception->getMessage()), Verbosity::Quiet);
-    }
-
-    private function renderUnexpected(Output $errorOutput, \Throwable $exception, bool $showTrace): void
-    {
-        $errorOutput->writeln(sprintf(
-            '<error>Unexpected %s:</error> %s',
-            $exception::class,
-            $exception->getMessage(),
-        ), Verbosity::Quiet);
-
-        if ($showTrace) {
-            $errorOutput->writeln('', Verbosity::Quiet);
-            $errorOutput->writeln($exception->getTraceAsString(), Verbosity::Quiet);
-        }
+        $errorOutput->writeln(sprintf('<e>Error:</e> %s', $exception->getMessage()), Verbosity::Quiet);
     }
 
     /**

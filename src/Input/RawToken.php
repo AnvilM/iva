@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input;
+namespace src\Input;
 
 final readonly class RawToken
 {

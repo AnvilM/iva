@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input;
+namespace src\Input;
 
-use Iva\Input\Exception\FieldError;
-use Iva\Input\Exception\InputValidationException;
-use Iva\Input\Exception\ValueCoercionException;
-use Iva\Input\Type\InputType;
+use src\Input\Exception\FieldError;
+use src\Input\Exception\InputValidationException;
+use src\Input\Exception\ValueCoercionException;
+use src\Input\Type\InputType;
 
 /**
  * Last stage of the pipeline: ParseResult (raw strings) + Definition (target

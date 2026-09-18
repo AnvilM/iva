@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
 /**
  * Owned by one Output sink (one real stream). Every AnsiSection created from

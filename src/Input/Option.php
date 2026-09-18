@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input;
+namespace src\Input;
 
-use Iva\Input\Type\ArrayType;
-use Iva\Input\Type\BoolType;
-use Iva\Input\Type\FloatType;
-use Iva\Input\Type\InputType;
-use Iva\Input\Type\IntType;
-use Iva\Input\Type\StringType;
-use Iva\Input\Type\TypeResolver;
+use BackedEnum as E;
+use src\Input\Type\ArrayType;
+use src\Input\Type\BoolType;
+use src\Input\Type\FloatType;
+use src\Input\Type\InputType;
+use src\Input\Type\IntType;
+use src\Input\Type\StringType;
+use src\Input\Type\TypeResolver;
 
 /**
  * A named option (`--foo`, `-f`), declared once via one of the named

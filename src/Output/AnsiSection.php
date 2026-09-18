@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
-use Iva\Output\Terminal\Cursor;
+use src\Output\Terminal\Cursor;
 
 /**
  * Cursor-controlled Section for interactive terminals (§9.4).

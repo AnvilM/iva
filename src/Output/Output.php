@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output;
+namespace src\Output;
 
-use Iva\Output\Formatter\Style;
-use Iva\Output\Terminal\ColorSupport;
+use src\Output\Formatter\Style;
+use src\Output\Terminal\ColorSupport;
 
 interface Output
 {

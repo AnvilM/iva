@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
-use Iva\Output\Terminal\ColorSupport;
+use src\Output\Terminal\ColorSupport;
 
 /**
  * Turns a Style into ANSI SGR escape sequences, degrading colors to whatever

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
 /**
  * Nearest-neighbour reduction from an arbitrary RGB triple down to one of the

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
 /**
  * Named styles available as `<name>...</name>` tags. Ships with a sensible

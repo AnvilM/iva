@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iva\Input;
+namespace src\Input;
 
-use Iva\Command\CommandNode;
+use src\Command\CommandNode;
 
 /**
  * Builds the Definition used for both parsing and `--help`, by walking the

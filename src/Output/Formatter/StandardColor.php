@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
 /**
  * The eight base ANSI colors (SGR 30-37 / 40-47), doubled to sixteen through

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iva\Output\Formatter;
+namespace src\Output\Formatter;
 
 /**
  * Conversions to/from the standard xterm 256-color palette: a 6x6x6 RGB cube
