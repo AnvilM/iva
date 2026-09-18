@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Output\Formatter;
+namespace Iva\Output\Formatter;
 
 /**
  * Parses the inline style syntax used inside a tag body, e.g.

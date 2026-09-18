@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace src\Help;
+namespace Iva\Help;
 
-use src\Command\CommandNode;
-use src\Command\CommandTree;
-use src\Input\Argument;
-use src\Input\Definition;
-use src\Input\GlobalOptions;
-use src\Input\Option;
-use src\Input\OptionMode;
-use src\Input\OptionOrigin;
-use src\Output\Output;
+use Iva\Command\CommandNode;
+use Iva\Command\CommandTree;
+use Iva\Input\Argument;
+use Iva\Input\Definition;
+use Iva\Input\GlobalOptions;
+use Iva\Input\Option;
+use Iva\Input\OptionMode;
+use Iva\Input\OptionOrigin;
+use Iva\Output\Output;
 
 final readonly class HelpGenerator
 {

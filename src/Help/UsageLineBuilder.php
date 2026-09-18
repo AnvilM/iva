@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace src\Help;
+namespace Iva\Help;
 
-use src\Command\CommandNode;
-use src\Input\Definition;
+use Iva\Command\CommandNode;
+use Iva\Input\Definition;
 
 final readonly class UsageLineBuilder
 {

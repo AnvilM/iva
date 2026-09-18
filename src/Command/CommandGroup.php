@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace src\Command;
+namespace Iva\Command;
 
-use src\ExitCode;
-use src\Input\Input;
-use src\Output\Output;
+use Iva\ExitCode;
+use Iva\Input\Input;
+use Iva\Output\Output;
 
 /**
  * A node that only groups subcommands (like `git remote`): it has no input

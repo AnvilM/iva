@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src;
+namespace Iva;
 
 enum ExitCode: int
 {

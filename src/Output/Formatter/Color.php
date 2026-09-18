@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Output\Formatter;
+namespace Iva\Output\Formatter;
 
 /**
  * A color request as written in a tag, independent of what the terminal can

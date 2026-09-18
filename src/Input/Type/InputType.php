@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Input\Type;
+namespace Iva\Input\Type;
 
 /**
  * @template-covariant T

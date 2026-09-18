@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Input;
+namespace Iva\Input;
 
 final class Definition
 {

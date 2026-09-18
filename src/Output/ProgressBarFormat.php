@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace src\Output;
+namespace Iva\Output;
 
-use src\Output\Terminal\VisualWidth;
+use Iva\Output\Terminal\VisualWidth;
 
 /**
  * Named default templates (§9.5) plus the `{placeholder}` / `{placeholder:3s}`

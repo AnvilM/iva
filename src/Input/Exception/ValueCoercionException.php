@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Input\Exception;
+namespace Iva\Input\Exception;
 
 /**
  * Thrown by an InputType when a raw argv value cannot be turned into the

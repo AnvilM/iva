@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace src\Output;
+namespace Iva\Output;
 
-use src\Output\Formatter\OutputFormatter;
-use src\Output\Formatter\Style;
-use src\Output\Terminal\ColorSupport;
+use Iva\Output\Formatter\OutputFormatter;
+use Iva\Output\Formatter\Style;
+use Iva\Output\Terminal\ColorSupport;
 
 /**
  * Shared plumbing for the three Output implementations: verbosity gating,

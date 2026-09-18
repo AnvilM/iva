@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace src\Output;
+namespace Iva\Output;
 
-use src\Output\Formatter\OutputFormatter;
-use src\Output\Terminal\ColorSupport;
+use Iva\Output\Formatter\OutputFormatter;
+use Iva\Output\Terminal\ColorSupport;
 
 /**
  * In-memory sink for the Testing kit. Verbosity defaults to Normal and color

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace src\Output;
+namespace Iva\Output;
 
 use Psl\IO;
-use src\Output\Formatter\OutputFormatter;
-use src\Output\Terminal\ColorSupport;
-use src\Output\Terminal\TerminalInfo;
+use Iva\Output\Formatter\OutputFormatter;
+use Iva\Output\Terminal\ColorSupport;
+use Iva\Output\Terminal\TerminalInfo;
 use function Psl\IO;
 
 final class ConsoleOutput extends AbstractOutput

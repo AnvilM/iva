@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Command;
+namespace Iva\Command;
 
 final class CommandNode
 {

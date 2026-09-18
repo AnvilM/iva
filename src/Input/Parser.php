@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace src\Input;
+namespace Iva\Input;
 
-use src\Command\SuggestionEngine;
-use src\Input\Exception\FieldError;
+use Iva\Command\SuggestionEngine;
+use Iva\Input\Exception\FieldError;
 
 /**
  * Turns the tail of argv (after CommandResolver stripped the command path)

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace src\Input\Exception;
+namespace Iva\Input\Exception;
 
-use src\Exception\CliException;
-use src\ExitCode;
+use Iva\Exception\CliException;
+use Iva\ExitCode;
 
 class InputValidationException extends CliException
 {

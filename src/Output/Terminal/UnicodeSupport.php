@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Output\Terminal;
+namespace Iva\Output\Terminal;
 
 final class UnicodeSupport
 {

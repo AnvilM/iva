@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace src\Output;
+namespace Iva\Output;
 
-use src\Output\Formatter\OutputFormatter;
-use src\Output\Terminal\ColorSupport;
-use src\Output\Terminal\VisualWidth;
+use Iva\Output\Formatter\OutputFormatter;
+use Iva\Output\Terminal\ColorSupport;
+use Iva\Output\Terminal\VisualWidth;
 
 final class Table
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace src\Exception;
+namespace Iva\Exception;
 
-use src\ExitCode;
+use Iva\ExitCode;
 
 abstract class CliException extends \RuntimeException
 {

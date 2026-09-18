@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace src\Testing;
+namespace Iva\Testing;
 
-use src\Application;
-use src\Output\BufferedOutput;
+use Iva\Application;
+use Iva\Output\BufferedOutput;
 
 /**
  * Swaps Application's stdout/stderr for BufferedOutput before every run(),

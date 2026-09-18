@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Input\Exception;
+namespace Iva\Input\Exception;
 
 final class UnknownOptionException extends InputValidationException
 {

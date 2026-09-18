@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace src\Input\Type;
+namespace Iva\Input\Type;
 
 use Psl\Type\Exception\AssertException;
 use Psl\Type\Exception\CoercionException;
 use Psl\Type\TypeInterface;
-use src\Input\Exception\ValueCoercionException;
+use Iva\Input\Exception\ValueCoercionException;
 
 /**
  * Escape hatch: wraps any user-supplied Psl\Type descriptor so that arbitrary

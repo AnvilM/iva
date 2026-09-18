@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Input;
+namespace Iva\Input;
 
 /**
  * Application-level persistent options. Registered with Global origin, so any

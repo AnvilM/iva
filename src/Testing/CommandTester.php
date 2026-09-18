@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace src\Testing;
+namespace Iva\Testing;
 
-use src\Command\Command;
-use src\Command\CommandNode;
-use src\Exception\CliException;
-use src\ExitCode;
-use src\Input\DefinitionFactory;
-use src\Input\Exception\InputValidationException;
-use src\Input\InputBinder;
-use src\Input\Lexer;
-use src\Input\Parser;
-use src\Output\BufferedOutput;
+use Iva\Command\Command;
+use Iva\Command\CommandNode;
+use Iva\Exception\CliException;
+use Iva\ExitCode;
+use Iva\Input\DefinitionFactory;
+use Iva\Input\Exception\InputValidationException;
+use Iva\Input\InputBinder;
+use Iva\Input\Lexer;
+use Iva\Input\Parser;
+use Iva\Output\BufferedOutput;
 
 /**
  * Exercises one command through the same Lexer -> Parser -> InputBinder

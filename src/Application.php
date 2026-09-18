@@ -2,35 +2,35 @@
 
 declare(strict_types=1);
 
-namespace src;
+namespace Iva;
 
-use src\Command\Command;
-use src\Command\CommandBuilder;
-use src\Command\CommandNode;
-use src\Command\CommandResolver;
-use src\Command\CommandTree;
-use src\Command\Lifecycle\PersistentPostRun;
-use src\Command\Lifecycle\PersistentPreRun;
-use src\Command\Lifecycle\PostRun;
-use src\Command\Lifecycle\PreRun;
-use src\Exception\CliException;
-use src\Help\HelpGenerator;
-use src\Help\UsageLineBuilder;
-use src\Input\Definition;
-use src\Input\DefinitionFactory;
-use src\Input\Exception\InputValidationException;
-use src\Input\GlobalOptions;
-use src\Input\Input;
-use src\Input\InputBinder;
-use src\Input\Lexer;
-use src\Input\Parser;
-use src\Input\ParseResult;
-use src\Output\ConsoleOutput;
-use src\Output\ErrorConsoleOutput;
-use src\Output\GlobalOutput;
-use src\Output\Output;
-use src\Output\Terminal\ColorSupport;
-use src\Output\Verbosity;
+use Iva\Command\Command;
+use Iva\Command\CommandBuilder;
+use Iva\Command\CommandNode;
+use Iva\Command\CommandResolver;
+use Iva\Command\CommandTree;
+use Iva\Command\Lifecycle\PersistentPostRun;
+use Iva\Command\Lifecycle\PersistentPreRun;
+use Iva\Command\Lifecycle\PostRun;
+use Iva\Command\Lifecycle\PreRun;
+use Iva\Exception\CliException;
+use Iva\Help\HelpGenerator;
+use Iva\Help\UsageLineBuilder;
+use Iva\Input\Definition;
+use Iva\Input\DefinitionFactory;
+use Iva\Input\Exception\InputValidationException;
+use Iva\Input\GlobalOptions;
+use Iva\Input\Input;
+use Iva\Input\InputBinder;
+use Iva\Input\Lexer;
+use Iva\Input\Parser;
+use Iva\Input\ParseResult;
+use Iva\Output\ConsoleOutput;
+use Iva\Output\ErrorConsoleOutput;
+use Iva\Output\GlobalOutput;
+use Iva\Output\Output;
+use Iva\Output\Terminal\ColorSupport;
+use Iva\Output\Verbosity;
 
 /**
  * Zero-magic-global-state entry point: an ordinary object, several instances

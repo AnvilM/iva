@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace src\Input\Type;
+namespace Iva\Input\Type;
 
-use src\Input\Exception\ValueCoercionException;
+use Iva\Input\Exception\ValueCoercionException;
 
 /**
  * @implements InputType<bool>

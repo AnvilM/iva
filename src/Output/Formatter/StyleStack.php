@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Output\Formatter;
+namespace Iva\Output\Formatter;
 
 /**
  * Tracks nested `<tag>...</tag>` spans while OutputFormatter walks a message,

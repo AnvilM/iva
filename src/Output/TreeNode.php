@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Output;
+namespace Iva\Output;
 
 final class TreeNode
 {

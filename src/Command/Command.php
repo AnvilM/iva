@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace src\Command;
+namespace Iva\Command;
 
-use src\Input\Argument;
-use src\Input\Definition;
-use src\Input\Input;
-use src\Input\Option;
-use src\Output\Output;
+use Iva\Input\Argument;
+use Iva\Input\Definition;
+use Iva\Input\Input;
+use Iva\Input\Option;
+use Iva\Output\Output;
 
 /**
  * Base class for every command. Registration is entirely explicit and

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace src\Command\Lifecycle;
+namespace Iva\Command\Lifecycle;
 
-use src\Output\Output;
+use Iva\Output\Output;
 
 interface PersistentPostRun
 {

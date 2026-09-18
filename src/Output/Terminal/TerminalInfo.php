@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace src\Output\Terminal;
+namespace Iva\Output\Terminal;
 
 /**
  * Terminal size, interactivity, and color support for a given stream.
