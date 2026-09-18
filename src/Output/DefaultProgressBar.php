@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iva\Output;
 
-use Psl\Async;
-use Psl\DateTime;
 use Iva\Output\Formatter\OutputFormatter;
 use Iva\Output\Terminal\ColorSupport;
-use function Psl\Async;
+use Iva\Output\Terminal\VisualWidth;
+use Psl\Async;
+use Psl\DateTime;
 
 final class DefaultProgressBar implements ProgressBar
 {

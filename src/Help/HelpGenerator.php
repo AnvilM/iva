@@ -212,7 +212,7 @@ final readonly class HelpGenerator
             return;
         }
 
-        /** @var CommandNode $groups */
+        /** @var array<string, list<CommandNode>> $groups */
         $groups = [];
 
         foreach ($visible as $node) {

@@ -79,7 +79,12 @@ declare(strict_types=1);
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Iva\Application;use Iva\Command\Command;use Iva\Input\Argument;use Iva\Input\Input;use Iva\Input\Option;use Iva\Output\Output;
+use Iva\Application;
+use Iva\Command\Command;
+use Iva\Input\Argument;
+use Iva\Input\Input;
+use Iva\Input\Option;
+use Iva\Output\Output;
 
 final class GreetCommand extends Command
 {

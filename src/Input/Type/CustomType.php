@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Iva\Input\Type;
 
+use Iva\Input\Exception\ValueCoercionException;
 use Psl\Type\Exception\AssertException;
 use Psl\Type\Exception\CoercionException;
 use Psl\Type\TypeInterface;
-use Iva\Input\Exception\ValueCoercionException;
 
 /**
  * Escape hatch: wraps any user-supplied Psl\Type descriptor so that arbitrary

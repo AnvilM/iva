@@ -11,11 +11,11 @@ use Iva\Input\Exception\ValueCoercionException;
  */
 final class UnionType implements InputType
 {
-    /** @var InputType */
+    /** @var non-empty-list<InputType<mixed>> */
     private readonly array $members;
 
     /**
-     * @param InputType $members
+     * @param non-empty-list<InputType<mixed>> $members
      */
     public function __construct(array $members)
     {

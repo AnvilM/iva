@@ -179,7 +179,7 @@ abstract class AbstractOutput implements Output
         return new DefaultSpinner(
             $this->section(),
             $message,
-            SpinnerStyle::default(\src\Output\Terminal\UnicodeSupport::detect()),
+            SpinnerStyle::default(Terminal\UnicodeSupport::detect()),
             $this->formatter,
             $this->colorSupportLevel,
         );
@@ -187,7 +187,7 @@ abstract class AbstractOutput implements Output
 
     public function table(): Table
     {
-        return new Table($this, $this->formatter, $this->colorSupportLevel, \src\Output\Terminal\UnicodeSupport::detect());
+        return new Table($this, $this->formatter, $this->colorSupportLevel, Terminal\UnicodeSupport::detect());
     }
 
     public function tree(): Tree

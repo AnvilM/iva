@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iva\Input;
 
-use BackedEnum as E;
 use Iva\Input\Type\ArrayType;
 use Iva\Input\Type\BoolType;
+use Iva\Input\Type\EnumType;
 use Iva\Input\Type\FloatType;
 use Iva\Input\Type\InputType;
 use Iva\Input\Type\IntType;

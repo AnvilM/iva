@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Iva\Output;
 
-use Psl\IO;
 use Iva\Output\Formatter\OutputFormatter;
 use Iva\Output\Terminal\ColorSupport;
 use Iva\Output\Terminal\TerminalInfo;
-use function Psl\IO;
+use Psl\IO;
 
 final class ConsoleOutput extends AbstractOutput
 {
