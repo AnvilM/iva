@@ -56,7 +56,7 @@ final readonly class Option
         string $name,
         ?string $shortcut = null,
         string $description = '',
-        bool $negatable = true,
+        bool $negatable = false,
         bool $persistent = false,
         bool $default = false,
     ): self {
