@@ -20,7 +20,7 @@ final class ErrorConsoleOutput extends AbstractOutput
         ?OutputFormatter $formatter = null,
         ?SectionManager $sectionManager = null,
     ) {
-        $this->handle = $handle ?? IO\error_handle();
+        $this->handle = $handle ?? IO\error_handle() ?? self::openStderr();
 
         $info = self::detectTerminalInfo();
 
@@ -41,6 +41,21 @@ final class ErrorConsoleOutput extends AbstractOutput
     protected function withConfig(Verbosity $verbosity, ColorSupport $colorSupport): static
     {
         return new self($verbosity, $colorSupport, $this->handle, $this->formatter, $this->sectionManager());
+    }
+
+    /**
+     * Psl\IO\error_handle() returns null outside of the 'cli' SAPI (e.g. 'micro'
+     * from static-php-cli, or 'embed'), so open php://stderr ourselves.
+     */
+    private static function openStderr(): IO\WriteHandleInterface
+    {
+        $stream = defined('STDERR') ? STDERR : fopen('php://stderr', 'wb');
+
+        if ($stream === false) {
+            throw new \RuntimeException('Unable to open php://stderr.');
+        }
+
+        return new IO\WriteStreamHandle($stream);
     }
 
     private static function detectTerminalInfo(): TerminalInfo
