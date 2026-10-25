@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iva\Input;
 
 use Iva\Input\Exception\FieldError;
+use Iva\Input\Invocation\InvocationLog;
 
 final class ParseResult
 {
@@ -14,6 +15,7 @@ final class ParseResult
      * @param array<string, int> $occurrences how many times each option was seen
      * @param list<FieldError> $errors
      * @param list<string> $providedOptions options explicitly present in argv
+     * @param InvocationLog|null $invocation the typed-order trace of argv (empty log when null)
      */
     public function __construct(
         private readonly array $arguments,
@@ -21,6 +23,7 @@ final class ParseResult
         private readonly array $occurrences = [],
         private readonly array $errors = [],
         private readonly array $providedOptions = [],
+        private readonly ?InvocationLog $invocation = null,
     ) {}
 
     /** @return array<string, string|array<int, string>|null> */
@@ -86,6 +89,15 @@ final class ParseResult
         return ($this->options[$optionName] ?? false) === true;
     }
 
+    /**
+     * Every recognised option occurrence and positional token, in the order
+     * they were typed.
+     */
+    public function invocation(): InvocationLog
+    {
+        return $this->invocation ?? new InvocationLog();
+    }
+
     public function withAdditionalErrors(FieldError ...$errors): self
     {
         return new self(
@@ -94,6 +106,7 @@ final class ParseResult
             $this->occurrences,
             [...$this->errors, ...$errors],
             $this->providedOptions,
+            $this->invocation,
         );
     }
 }

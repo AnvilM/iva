@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Iva\Input;
 
+use Iva\Input\Invocation\InvocationLog;
+
 /**
  * Fully parsed, type-coerced input handed to Command::execute(), built by
  * InputBinder from a ParseResult against the resolved Definition. Every
@@ -17,17 +19,40 @@ namespace Iva\Input;
  * known at the call site — an `Argument<int>` gives you an `int`, an
  * `Option<DeployStrategy>` gives you a `DeployStrategy`, statically, not by
  * convention or a `@var` docblock the type checker can't verify.
+ *
+ * The values say *what* was passed; {@see self::invocation()} says *how and in
+ * which order* it was typed.
  */
 final readonly class Input
 {
     /**
      * @param array<string, mixed> $arguments value per Argument::$name
      * @param array<string, mixed> $options value per Option::$name
+     * @param InvocationLog $invocation the command line as typed, in order
      */
     public function __construct(
         private array $arguments,
         private array $options,
+        private InvocationLog $invocation = new InvocationLog(),
     ) {}
+
+    /**
+     * The command line as it was typed: every option occurrence and positional
+     * token, in order, with positions, raw values and syntactic forms.
+     */
+    public function invocation(): InvocationLog
+    {
+        return $this->invocation;
+    }
+
+    /**
+     * Whether the option/argument was explicitly typed (as opposed to taking
+     * its default). Unlike the value, this cannot be faked by a default.
+     */
+    public function provided(Option|Argument $handle): bool
+    {
+        return $this->invocation->has($handle);
+    }
 
     /**
      * @template T

@@ -49,7 +49,7 @@ final class Application
 {
     private readonly CommandTree $tree;
     private readonly CommandResolver $resolver;
-    private readonly HelpGenerator $helpGenerator;
+    private HelpGenerator $helpGenerator;
     private readonly UsageLineBuilder $usageLineBuilder;
     private readonly Lexer $lexer;
     private readonly Parser $parser;
@@ -78,6 +78,15 @@ final class Application
     public function allowOptionAbbreviation(bool $allow = true): void
     {
         $this->optionAbbreviation = $allow;
+    }
+
+    /**
+     * Fixes the width `--help` wraps descriptions at. By default it follows
+     * the terminal (the COLUMNS variable, 80 when unknown); null restores that.
+     */
+    public function setHelpWidth(?int $columns): void
+    {
+        $this->helpGenerator = new HelpGenerator($this->usageLineBuilder, $columns);
     }
 
     public function setOutput(Output $output): void
@@ -180,7 +189,10 @@ final class Application
             $node = $path[count($path) - 1];
 
             $definition = $this->definitionFactory->create($path, allowAbbreviation: $this->optionAbbreviation);
-            $parseResult = $this->parser->parse($this->lexer->tokenize($remaining), $definition);
+            $parseResult = $this->parser->parse(
+                $this->lexer->tokenize($remaining, count($tokens) - count($remaining)),
+                $definition,
+            );
         } catch (CliException $e) {
             $this->renderException($errorOutput, $e);
 

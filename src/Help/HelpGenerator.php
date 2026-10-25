@@ -12,12 +12,33 @@ use Iva\Input\GlobalOptions;
 use Iva\Input\Option;
 use Iva\Input\OptionMode;
 use Iva\Input\OptionOrigin;
+use Iva\Output\ConsoleOutput;
+use Iva\Output\ErrorConsoleOutput;
 use Iva\Output\Output;
+use Iva\Output\Terminal\TerminalInfo;
 
+/**
+ * Renders `--help`. Every list (arguments, options, commands) is a two-column
+ * table: a label column and a description column. Descriptions are wrapped to
+ * the terminal width and every continuation line is indented to the start of
+ * the description column, so the text always forms one straight block to the
+ * right of the labels; a blank line separates the items.
+ */
 final readonly class HelpGenerator
 {
+    private const int DEFAULT_COLUMNS = 80;
+    private const int MIN_COLUMNS = 40;
+    private const int MAX_COLUMNS = 120;
+    private const int MIN_DESCRIPTION_WIDTH = 20;
+
+    /**
+     * @param int|null $width columns to wrap at; null follows the terminal
+     *        (COLUMNS, 80 when unknown or when the output is not a console)
+     */
     public function __construct(
         private UsageLineBuilder $usageLineBuilder = new UsageLineBuilder(),
+        private ?int $width = null,
+        private TextWrapper $wrapper = new TextWrapper(),
     ) {}
 
     public function renderApplicationRoot(
@@ -112,29 +133,26 @@ final readonly class HelpGenerator
             return;
         }
 
-        $labels = [];
+        $rows = [];
 
         foreach ($arguments as $argument) {
-            $labels[$argument->name] = $argument->variadic ? $argument->name . '...' : $argument->name;
-        }
+            $notes = [];
 
-        $width = $this->columnWidth($labels);
+            if ($argument->default !== null && $argument->default !== []) {
+                $notes[] = sprintf('default: %s', $this->formatDefault($argument->default));
+            }
+
+            $rows[] = [
+                'label' => $argument->variadic ? $argument->name . '...' : $argument->name,
+                'description' => $argument->description,
+                'notes' => $notes,
+            ];
+        }
 
         $output->writeln('');
         $output->writeln('Arguments:');
 
-        foreach ($arguments as $argument) {
-            $suffix = $argument->default !== null && $argument->default !== []
-                ? sprintf(' [default: %s]', $this->formatDefault($argument->default))
-                : '';
-
-            $output->writeln(sprintf(
-                '  %-' . $width . 's  %s%s',
-                $labels[$argument->name],
-                $argument->description,
-                $suffix,
-            ));
-        }
+        $this->renderRows($output, $rows);
     }
 
     /**
@@ -148,16 +166,7 @@ final readonly class HelpGenerator
 
         usort($options, static fn(Option $a, Option $b): int => $a->name <=> $b->name);
 
-        $labels = [];
-
-        foreach ($options as $option) {
-            $labels[$option->name] = $this->optionLabel($option);
-        }
-
-        $width = $this->columnWidth($labels);
-
-        $output->writeln('');
-        $output->writeln($heading);
+        $rows = [];
 
         foreach ($options as $option) {
             $notes = [];
@@ -174,13 +183,17 @@ final readonly class HelpGenerator
                 $notes[] = 'overrides the inherited option';
             }
 
-            $output->writeln(sprintf(
-                '  %-' . $width . 's  %s%s',
-                $labels[$option->name],
-                $option->description,
-                $notes === [] ? '' : sprintf(' [%s]', implode('; ', $notes)),
-            ));
+            $rows[] = [
+                'label' => $this->optionLabel($option),
+                'description' => $option->description,
+                'notes' => $notes,
+            ];
         }
+
+        $output->writeln('');
+        $output->writeln($heading);
+
+        $this->renderRows($output, $rows);
     }
 
     private function optionLabel(Option $option): string
@@ -227,6 +240,7 @@ final readonly class HelpGenerator
             $labels[$node->metadata()->name] = $node->metadata()->name;
         }
 
+        // One label column for every group, so descriptions line up across them.
         $width = $this->columnWidth($labels);
         $first = true;
 
@@ -237,14 +251,108 @@ final readonly class HelpGenerator
             $output->writeln($group === '' ? ($first ? $heading : 'Other:') : $group . ':');
             $first = false;
 
+            $rows = [];
+
             foreach ($members as $node) {
-                $output->writeln(sprintf(
-                    '  %-' . $width . 's  %s',
-                    $node->metadata()->name,
-                    $node->metadata()->description,
+                $rows[] = [
+                    'label' => $node->metadata()->name,
+                    'description' => $node->metadata()->description,
+                    'notes' => [],
+                ];
+            }
+
+            $this->renderRows($output, $rows, $width);
+        }
+    }
+
+    /**
+     * Prints a label/description table.
+     *
+     *  - the description column starts at a fixed offset, and every wrapped
+     *    line of a description is indented to it;
+     *  - a label too long for the label column gets a line of its own, with
+     *    the description starting below it, still in the description column;
+     *  - items are separated by one blank line (none before the first or
+     *    after the last);
+     *  - notes ("default: x", "repeatable", ...) follow the description as a
+     *    single bracketed unit, which is kept on one line when it fits.
+     *
+     * @param list<array{label: string, description: string, notes: list<string>}> $rows
+     * @param int|null $labelWidth label column width; null sizes it to the rows
+     */
+    private function renderRows(Output $output, array $rows, ?int $labelWidth = null): void
+    {
+        if ($rows === []) {
+            return;
+        }
+
+        $labelWidth ??= $this->columnWidth(array_column($rows, 'label'));
+        $descriptionIndent = 2 + $labelWidth + 2;
+        $descriptionWidth = max(self::MIN_DESCRIPTION_WIDTH, $this->columns($output) - $descriptionIndent);
+        $indent = str_repeat(' ', $descriptionIndent);
+
+        foreach ($rows as $position => $row) {
+            if ($position > 0) {
+                $output->writeln('');
+            }
+
+            $text = $this->withNotes($row['description'], $row['notes'], $descriptionWidth);
+            $lines = $text === '' ? [] : $this->wrapper->wrap($text, $descriptionWidth);
+            $labelVisible = $this->wrapper->width($row['label']);
+
+            if ($lines === []) {
+                $output->writeln('  ' . $row['label']);
+
+                continue;
+            }
+
+            if ($labelVisible > $labelWidth) {
+                $output->writeln('  ' . $row['label']);
+            } else {
+                $first = array_shift($lines);
+                $output->writeln(rtrim(
+                    '  ' . $row['label'] . str_repeat(' ', $labelWidth - $labelVisible) . '  ' . $first,
                 ));
             }
+
+            foreach ($lines as $line) {
+                $output->writeln($line === '' ? '' : $indent . $line);
+            }
         }
+    }
+
+    /**
+     * @param list<string> $notes
+     */
+    private function withNotes(string $description, array $notes, int $descriptionWidth): string
+    {
+        if ($notes === []) {
+            return $description;
+        }
+
+        $note = sprintf('[%s]', implode('; ', $notes));
+
+        if ($this->wrapper->width($note) <= $descriptionWidth) {
+            $note = str_replace(' ', TextWrapper::NO_BREAK_SPACE, $note);
+        }
+
+        return $description === '' ? $note : $description . ' ' . $note;
+    }
+
+    private function columns(Output $output): int
+    {
+        if ($this->width !== null) {
+            return max(self::MIN_COLUMNS, $this->width);
+        }
+
+        if (!$output instanceof ConsoleOutput && !$output instanceof ErrorConsoleOutput) {
+            return self::DEFAULT_COLUMNS;
+        }
+
+        $stream = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'wb');
+        $columns = TerminalInfo::detect($stream)->columns;
+
+        return min(self::MAX_COLUMNS, max(self::MIN_COLUMNS, $columns));
     }
 
     private function renderExamples(Output $output, CommandNode $node): void
@@ -268,14 +376,14 @@ final readonly class HelpGenerator
     }
 
     /**
-     * @param array<string, string> $labels
+     * @param array<array-key, string> $labels
      */
     private function columnWidth(array $labels): int
     {
         $width = 0;
 
         foreach ($labels as $label) {
-            $width = max($width, strlen($label));
+            $width = max($width, $this->wrapper->width($label));
         }
 
         return min(max($width, 8), 32);

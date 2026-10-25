@@ -39,7 +39,7 @@ final class InputBinder
             throw new InputValidationException($errors);
         }
 
-        return new Input($arguments, $options);
+        return new Input($arguments, $options, $result->invocation());
     }
 
     /**

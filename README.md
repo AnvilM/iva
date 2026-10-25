@@ -52,6 +52,11 @@ in `configure()` — so a typo or a type mismatch is a static-analysis error, no
   used to parse input, for the whole app, a group, or a single command (`--help` / `-h`).
 - **First-class testing utilities** — `CommandTester` and `ApplicationTester` run a command through the real
   lexer → parser → binder pipeline against a `BufferedOutput`, with no real process or `exec` involved.
+- **Invocation trace** — `$input->invocation()` exposes the command line exactly as it was typed: the order of every
+  option and positional, argv positions, raw per-occurrence values, `-vvv` clusters, `--no-x`, abbreviations and the
+  `--` marker, with a chainable query API.
+- **Aligned, wrapped help** — descriptions are wrapped to the terminal width and every continuation line is aligned to
+  the description column; items are separated by a blank line.
 - **Persistent (inherited) options** — declare an option once on a parent group and every subcommand can read it
   back through the same typed handle.
 
@@ -251,6 +256,74 @@ $tester->assertOutputContains('HELLO, ADA!');
 
 `ApplicationTester` does the same at the whole-application level, resolving the command path exactly as `run()`
 would.
+
+## Invocation order
+
+Values tell you *what* was passed; `$input->invocation()` tells you *how and in which order*. It returns an immutable
+`InvocationLog` of `ArgvEntry` objects, one per option occurrence (`--tag a --tag b` is two, `-vvv` is three), per
+positional token, and one for a `--` marker.
+
+```php
+public function execute(Input $input, Output $output): int
+{
+    $log = $input->invocation();
+
+    // Typed order of related options: --include a --exclude b --include c
+    foreach ($log->ofAny($this->include, $this->exclude) as $entry) {
+        $rule = $entry->name === 'include' ? '+' : '-';
+        $output->writeln($rule . ' ' . $entry->value);
+    }
+
+    $log->precedes($this->force, $this->dryRun);   // was --force typed before --dry-run?
+    $log->last($this->color)?->isNegated();        // does the last --color/--no-color win?
+    $log->options()->labels();                     // ['--force', '--tag', '--tag']
+    $log->times('verbose');                        // -vvv => 3
+    $log->afterTerminator()->values('file');       // tokens typed after `--`
+    $input->provided($this->retries);              // typed explicitly, or just the default?
+
+    echo $log->describe();                         // debug table
+}
+```
+
+A target is an `Option`/`Argument` handle (typed, only matches that kind) or a string matched against the entry name or
+label (`'tag'`, `'--tag'`). Every narrowing method returns a new log, so queries chain:
+
+| Method | Purpose |
+|--------|---------|
+| `all()`, `count()`, iteration | every entry in typed order |
+| `options()`, `arguments()`, `afterTerminator()` | narrow by kind |
+| `of($t)`, `ofAny(...$ts)` | narrow to one or several targets, interleaved as typed |
+| `before($t)`, `after($t)`, `between($a, $b)` | slice around first occurrences |
+| `has`, `first`, `last`, `at`, `times`, `values` | lookups |
+| `positionOf`, `sequenceOf`, `precedes`, `follows` | positions and relative order |
+| `labels()`, `names()`, `groupedByName()`, `map()`, `filter()`, `slice()`, `toArray()`, `describe()` | projections |
+| `tokens()`, `offset()` | the raw argv tail the parser saw and how many tokens the command path used |
+
+Each `ArgvEntry` carries `kind`, `name`, `token` (the raw token), `value` (raw value of that occurrence; `true`/`false`
+for flags), `position` (0-based argv index after the script name, command path included), `sequence`, `ordinal`, `form`
+(`Long`, `LongNegated`, `LongAbbreviated`, `Short`, `Positional`, `Terminated`, `Terminator`), `cluster` (letter index
+inside `-abc`) and `valuePosition` (argv index of a separate value token, `null` when inline). A positional that no
+declared `Argument` claims keeps an empty `name`. `CommandTester` fills the log too, from the tokens you pass.
+
+## Help layout
+
+`--help` renders arguments, options and commands as a two-column table. Descriptions are wrapped to the terminal width
+(`COLUMNS`, 80 when unknown, clamped to 40–120; `$app->setHelpWidth(100)` fixes it) and every continuation line is
+indented to the start of the description column, with one blank line between items. A label wider than the label
+column goes on its own line and the description starts below it, still in the description column. Notes such as
+`[default: 3]` and `[repeatable]` are kept on one line when they fit. A `\n` in a description starts a new paragraph,
+and a no-break space (U+00A0) keeps two words together.
+
+```
+Options:
+  -f, --force / --no-force  Overwrite existing files in the target directories
+                            without asking for confirmation first
+
+      --retries=RETRIES     How many times a failed copy is retried before
+                            giving up [default: 3]
+
+  -h, --help                Show help for this command
+```
 
 ## Supported input styles
 

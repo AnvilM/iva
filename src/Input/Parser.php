@@ -6,6 +6,10 @@ namespace Iva\Input;
 
 use Iva\Command\SuggestionEngine;
 use Iva\Input\Exception\FieldError;
+use Iva\Input\Invocation\ArgvEntry;
+use Iva\Input\Invocation\EntryForm;
+use Iva\Input\Invocation\EntryKind;
+use Iva\Input\Invocation\InvocationLog;
 
 /**
  * Turns the tail of argv (after CommandResolver stripped the command path)
@@ -27,7 +31,9 @@ final class Parser
     public function parse(array $rawTokens, Definition $definition): ParseResult
     {
         $state = new ParserState();
+        $rawTokens = array_values($rawTokens);
         $tokens = array_map(static fn(RawToken $token): string => $token->value, $rawTokens);
+        $state->positions = array_map(static fn(RawToken $token): int => $token->position, $rawTokens);
 
         $count = count($tokens);
         $index = 0;
@@ -35,14 +41,21 @@ final class Parser
         while ($index < $count) {
             $token = $tokens[$index];
 
+            $state->position = $state->positions[$index];
+            $state->token = $token;
+            $state->form = EntryForm::Long;
+            $state->cluster = 0;
+            $state->valuePosition = null;
+
             if ($state->terminated) {
-                $state->positionals[] = $token;
+                $this->addPositional($token, EntryForm::Terminated, $state);
                 $index++;
                 continue;
             }
 
             if ($token === '--') {
                 $state->terminated = true;
+                $this->addTerminator($state);
                 $index++;
                 continue;
             }
@@ -57,7 +70,7 @@ final class Parser
                 continue;
             }
 
-            $state->positionals[] = $token;
+            $this->addPositional($token, EntryForm::Positional, $state);
             $index++;
         }
 
@@ -71,7 +84,62 @@ final class Parser
             $state->occurrences,
             $state->errors,
             array_keys($state->occurrences),
+            new InvocationLog($this->finalizeEntries($state), $tokens, $state->positions[0] ?? 0),
         );
+    }
+
+    private function addPositional(string $token, EntryForm $form, ParserState $state): void
+    {
+        $ordinal = $state->argumentOrdinal++;
+
+        $state->positionals[] = $token;
+        $state->positionalEntries[$ordinal] = count($state->entries);
+        $state->entries[] = new ArgvEntry(
+            EntryKind::Argument,
+            '',
+            $token,
+            $token,
+            $state->position,
+            count($state->entries),
+            $ordinal,
+            $form,
+        );
+    }
+
+    private function addTerminator(ParserState $state): void
+    {
+        $state->entries[] = new ArgvEntry(
+            EntryKind::Terminator,
+            '--',
+            '--',
+            null,
+            $state->position,
+            count($state->entries),
+            0,
+            EntryForm::Terminator,
+        );
+    }
+
+    /**
+     * Positional entries are recorded before the Parser knows which declared
+     * Argument will claim them; once bindPositionals() has decided, the owner's
+     * name is written back so the log can be queried by Argument handle.
+     *
+     * @return list<ArgvEntry>
+     */
+    private function finalizeEntries(ParserState $state): array
+    {
+        $entries = $state->entries;
+
+        foreach ($state->positionalOwners as $ordinal => $name) {
+            $at = $state->positionalEntries[$ordinal] ?? null;
+
+            if ($at !== null) {
+                $entries[$at] = $entries[$at]->withName($name);
+            }
+        }
+
+        return $entries;
     }
 
     private function isLongOption(string $token): bool
@@ -124,6 +192,7 @@ final class Parser
                 $option = $candidate;
                 $name = $candidate->name;
                 $negated = true;
+                $state->form = EntryForm::LongNegated;
             }
         }
 
@@ -133,6 +202,7 @@ final class Parser
             if (count($matches) === 1) {
                 $option = $definition->findOptionByLongName($matches[0]);
                 $name = $matches[0];
+                $state->form = EntryForm::LongAbbreviated;
             } elseif (count($matches) > 1) {
                 $state->errors[] = new FieldError(
                     $name,
@@ -174,7 +244,10 @@ final class Parser
         $length = strlen($body);
         $next = $index + 1;
 
+        $state->form = EntryForm::Short;
+
         for ($position = 0; $position < $length; $position++) {
+            $state->cluster = $position;
             $character = $body[$position];
             $option = $definition->findOptionByShortcut($character);
 
@@ -189,7 +262,7 @@ final class Parser
             }
 
             if ($option->mode === OptionMode::None) {
-                $this->record($option, true, $state);
+                $this->record($option, true, $state, true);
 
                 continue;
             }
@@ -229,7 +302,7 @@ final class Parser
                 );
             }
 
-            $this->record($option, !$negated, $state);
+            $this->record($option, !$negated, $state, !$negated);
 
             return $next;
         }
@@ -238,6 +311,7 @@ final class Parser
 
         if ($value === null && isset($tokens[$next]) && !$this->looksLikeOption($tokens[$next])) {
             $value = $tokens[$next];
+            $state->valuePosition = $state->positions[$next];
             $next++;
         }
 
@@ -249,7 +323,7 @@ final class Parser
                     sprintf('Option "%s" requires a value.', $label),
                 );
             } else {
-                $this->record($option, null, $state);
+                $this->record($option, null, $state, null);
             }
 
             return $next;
@@ -264,7 +338,7 @@ final class Parser
             $existing = $state->options[$option->name] ?? [];
             $existing = is_array($existing) ? $existing : [];
             $existing[] = $value;
-            $this->record($option, $existing, $state);
+            $this->record($option, $existing, $state, $value);
 
             return $next;
         }
@@ -282,18 +356,34 @@ final class Parser
             return $next;
         }
 
-        $this->record($option, $value, $state);
+        $this->record($option, $value, $state, $value);
 
         return $next;
     }
 
     /**
-     * @param string|array<int, string>|bool|null $value
+     * Stores the option's running value and appends this one occurrence to
+     * the invocation trace.
+     *
+     * @param string|array<int, string>|bool|null $value the accumulated value kept in the options map
+     * @param string|bool|null $entryValue the raw value of just this occurrence
      */
-    private function record(Option $option, string|array|bool|null $value, ParserState $state): void
+    private function record(Option $option, string|array|bool|null $value, ParserState $state, string|bool|null $entryValue): void
     {
         $state->options[$option->name] = $value;
         $state->occurrences[$option->name] = ($state->occurrences[$option->name] ?? 0) + 1;
+        $state->entries[] = new ArgvEntry(
+            EntryKind::Option,
+            $option->name,
+            $state->token,
+            $entryValue,
+            $state->position,
+            count($state->entries),
+            $state->optionOrdinal++,
+            $state->form,
+            $state->cluster,
+            $state->valuePosition,
+        );
     }
 
     private function looksLikeOption(string $token): bool
@@ -345,6 +435,11 @@ final class Parser
         foreach ($arguments as $position => $argument) {
             if ($argument->variadic && $position === $lastIndex) {
                 $values[$argument->name] = array_slice($positionals, $index);
+
+                for ($owned = $index; $owned < $count; $owned++) {
+                    $state->positionalOwners[$owned] = $argument->name;
+                }
+
                 $index = $count;
                 continue;
             }
@@ -364,6 +459,7 @@ final class Parser
             }
 
             $values[$argument->name] = $positionals[$index];
+            $state->positionalOwners[$index] = $argument->name;
             $index++;
         }
 
